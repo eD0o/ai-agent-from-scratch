@@ -89,8 +89,118 @@
 - Understanding `vectorization, attention, and token limits` gives you a massive edge when building with LLMs.
 - You don’t need to train your own — but `you do need to understand how they work to use them well`.
 
+## 2.2 - Types of LLMs
 
+### 2.2.1 - Base Models (Foundational)
 
+- Trained on diverse internet-scale data
+- Task-agnostic (no instruction fine-tuning)
+- Power tools for research, fine-tuning, or APIs
+
+> 🟦 Raw completion capability, not instruction-following
+
+### 2.2.2 - Instruction-Tuned Models
+
+Fine-tuned versions of base models that are taught to follow human instructions more reliably.
+
+#### 🛠 Examples
+
+- ChatGPT = GPT + Instructions + Guardrails
+- Claude – Chat-focused with alignment layers
+
+#### ✅ Benefits
+
+- Better intent understanding
+- Safer, more consistent outputs
+- Role-based alignment (e.g., "You’re a helpful assistant")
+
+### 2.2.3 - Domain-Specific Models
+
+Tailored models fine-tuned on niche datasets (e.g., medical, finance, code).
+
+#### 🔍 Examples
+
+- Code LLaMA – Programming
+- Med-PaLM – Medical QA
+- FinGPT – Finance insights
+
+#### 🎯 Use Cases
+
+- Software development, scientific research, healthcare
+- Specialized search, analysis, and classification
+
+### 2.2.4 - Model Sizes & Parameters
+
+LLMs vary in size, measured by parameter count — the internal values that define the model’s knowledge and complexity.
+
+| Size    | Description                                 |
+| ------- | ------------------------------------------- |
+| 2B–7B   | Efficient, good for edge devices            |
+| 13B–65B | Balanced for local or enterprise            |
+| >100B   | Cloud-scale, state-of-the-art (e.g., GPT-4) |
+
+> ⚠️ More parameters → higher accuracy, but increased cost and latency
+
+### 2.2.5 - Under the Hood: Weights
+
+Weights are the learned values that define how a model processes inputs. Think of them as the `memories encoded in a neural net`.
+
+#### 🧠 Analogy
+
+> Model = Brain
+> Weights = Memories from schooling
+> Training = The “education” process
+
+## 2.2.6 - - Practical Considerations
+
+### ❗ Limitations
+
+| Type               | Description                                                 |
+| ------------------ | ----------------------------------------------------------- |
+| 🧠 Hallucinations  | Confidently wrong outputs (not "lying")                     |
+| ⏳ Context Windows | Token limits restrict memory (e.g., GPT-4 = 8k–128k tokens) |
+| ⚡ Compute Cost    | Training requires millions in GPUs                          |
+| ⚖️ Bias            | Reflects biases in data and alignment process               |
+
+### 🧩 Best Practices
+
+| Practice              | Why It Matters           |
+| --------------------- | ------------------------ |
+| ✅ Clear Prompts      | Reduces ambiguity        |
+| 🔥 Temperature Tuning | Controls randomness      |
+| 🧵 Context Management | Efficient memory use     |
+| 🛑 Error Handling     | Catch unreliable outputs |
+
+### 🖥️ Resource Requirements
+
+| Factor     | Notes                                  |
+| ---------- | -------------------------------------- |
+| 💾 Memory  | High for large models                  |
+| ⚙️ GPU/CPU | Required for local inference           |
+| 🚀 Latency | Bigger model = slower responses        |
+| 📈 Scaling | Auto-scaling often needed for prod use |
+
+## 2.2.7 - Integration Patterns & Use Cases
+
+### 🔌 API Access
+
+> You don’t need to train or host models — just access them via API.
+
+#### Options:
+
+- OpenAI, Anthropic, HuggingFace, Replicate
+- REST APIs or WebSockets
+- Batch or streaming responses
+
+### 💡 Common Use Cases
+
+| Use Case           | Examples                           |
+| ------------------ | ---------------------------------- |
+| 📝 Text Generation | Blog posts, product descriptions   |
+| 📊 Analysis        | Sentiment, trends, data extraction |
+| 🧠 Classification  | Moderation, sorting                |
+| 🌍 Translation     | Cross-lingual content              |
+| 💻 Code Generation | Auto-completion, refactoring       |
 
 ## Additional Resources
 
