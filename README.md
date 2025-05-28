@@ -151,9 +151,9 @@ Weights are the learned values that define how a model processes inputs. Think o
 > Weights = Memories from schooling
 > Training = The “education” process
 
-## 2.2.6 - - Practical Considerations
+### 2.2.6 - - Practical Considerations
 
-### ❗ Limitations
+#### ❗ Limitations
 
 | Type               | Description                                                 |
 | ------------------ | ----------------------------------------------------------- |
@@ -162,7 +162,7 @@ Weights are the learned values that define how a model processes inputs. Think o
 | ⚡ Compute Cost    | Training requires millions in GPUs                          |
 | ⚖️ Bias            | Reflects biases in data and alignment process               |
 
-### 🧩 Best Practices
+#### 🧩 Best Practices
 
 | Practice              | Why It Matters           |
 | --------------------- | ------------------------ |
@@ -171,7 +171,7 @@ Weights are the learned values that define how a model processes inputs. Think o
 | 🧵 Context Management | Efficient memory use     |
 | 🛑 Error Handling     | Catch unreliable outputs |
 
-### 🖥️ Resource Requirements
+#### 🖥️ Resource Requirements
 
 | Factor     | Notes                                  |
 | ---------- | -------------------------------------- |
@@ -180,9 +180,9 @@ Weights are the learned values that define how a model processes inputs. Think o
 | 🚀 Latency | Bigger model = slower responses        |
 | 📈 Scaling | Auto-scaling often needed for prod use |
 
-## 2.2.7 - Integration Patterns & Use Cases
+### 2.2.7 - Integration Patterns & Use Cases
 
-### 🔌 API Access
+#### 🔌 API Access
 
 > You don’t need to train or host models — just access them via API.
 
@@ -192,7 +192,7 @@ Weights are the learned values that define how a model processes inputs. Think o
 - REST APIs or WebSockets
 - Batch or streaming responses
 
-### 💡 Common Use Cases
+#### 💡 Common Use Cases
 
 | Use Case           | Examples                           |
 | ------------------ | ---------------------------------- |
@@ -201,6 +201,94 @@ Weights are the learned values that define how a model processes inputs. Think o
 | 🧠 Classification  | Moderation, sorting                |
 | 🌍 Translation     | Cross-lingual content              |
 | 💻 Code Generation | Auto-completion, refactoring       |
+
+## 2.3 - OpenAI Hello World
+
+### ✅ 1. Setup: Add Your API Key
+
+- `Create a .env file` in your project root.
+- Add your [OpenAI API key ](https://platform.openai.com/api-keys) like this (without brackets):
+
+```env
+OPENAI_API_KEY='your_key_here'
+```
+
+> Use .gitignore to keep your API key secret and ensure it doesn't get uploaded to GitHub.
+
+### ✅ 2. Install Dependencies
+
+- Run `npm install` to install the required packages from package.json.
+- You can use `npm start` to run the app (or use bun if you prefer).
+
+### ✅ 3. Project Structure Overview
+
+- index.ts: Processes user input and runs the main app logic.
+- src/ai/index.ts: Initializes and exports the OpenAI client.
+- UI code: Just for terminal display; not the focus here.
+- Goal: Keep it simple and CLI-based so you focus on learning AI so far.
+
+### ✅ 4. Create a Basic AI Call: runLLM Function
+
+You’ll write a function that:
+
+- Takes an user message.
+- Sends it to OpenAI using openai.chat.completions.create.
+- Returns the model’s response.
+
+```ts
+import type { AIMessage } from "../types";
+import { openai } from "./ai";
+
+export const runLLM = async ({ userMessage }: { userMessage: string }) => {
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o-mini", // Smaller, cheaper, fast model
+    temperature: 0.1, // Controls creativity (0 = logical, 2 = chaotic)
+    messages: [{ role: "user", content: userMessage }],
+  });
+
+  return response.choices[0].message.content;
+};
+```
+
+### ✅ 5. Use It in Your `index.ts` File
+
+Example usage:
+
+```ts
+import "dotenv/config";
+import { runLLM } from "./src/llm";
+
+const userMessage = process.argv[2];
+
+if (!userMessage) {
+  console.error("Please provide a message");
+  process.exit(1);
+}
+
+const response = await runLLM({ userMessage });
+
+console.log(response);
+```
+
+### 🧠 Important Concepts
+
+- LLMs are stateless by default: If you ask it "What’s my name?" it won’t remember earlier messages unless you include them again.
+- `No memory unless you implement it manually`.
+
+> That’s why building agents (smart apps with memory) is more complex — and a big part of AI development.
+
+### ❌ LangChain? Not Recommended (For JS Devs)
+
+Scott’s take:
+
+- LangChain was helpful in early LLM days (especially for Python).
+- Today, `OpenAI has native support for things LangChain used to solve` (structured outputs, tool calling, schemas).
+- `LangChain's TypeScript API is confusing` and feels like auto-translated Python.
+- In practice, most production teams just call the OpenAI API directly — no frameworks.
+
+---
+
+> You now have working AI in your app — the rest is just how far you want to go with memory, agents, and features.
 
 ## Additional Resources
 
