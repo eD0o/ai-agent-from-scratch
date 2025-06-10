@@ -184,3 +184,124 @@ RAG (Retrieval-Augmented Generation)
 - Memory length
 - Relevance
 - Performance
+
+## 3.4 - Building an AI Chat with Memory
+
+### 🧠 Key Concepts
+
+- Chat message ordering matters:
+
+  - You can send multiple user or assistant messages in a row, but results are unpredictable.
+  - Tool calls and function outputs must follow strict order, or the AI may break.
+
+- Lowdb as a database:
+
+  - Uses a JSON file as a persistent store.
+  - Abstracts file read/write with helper methods.
+
+- Metadata for messages:
+
+  - id (via uuid) and createdAt are added to each message.
+  - AI does not care about these fields; they must be removed before sending messages to the model.
+
+## 🛠️ Code Summary
+
+### Message Metadata Helpers
+
+```ts
+export const addMetadata = (message: AIMessage): MessageWithMetadata => ({
+  ...message,
+  id: uuidv4(),
+  createdAt: new Date().toISOString(),
+});
+
+export const removeMetadata = (message: MessageWithMetadata): AIMessage => {
+  const { id, createdAt, ...rest } = message;
+  return rest;
+};
+```
+
+### Database Setup
+
+```ts
+import { JSONFilePreset } from "lowdb/node";
+import type { MessageWithMetadata } from "./types";
+
+const defaultData = { messages: [] };
+
+export const getDb = async () => {
+  const db = await JSONFilePreset<typeof defaultData>("db.json", defaultData);
+  return db;
+};
+```
+
+### Save and Load Messages
+
+```ts
+export const addMessages = async (messages: AIMessage[]) => {
+  const db = await getDb();
+  db.data.messages.push(...messages.map(addMetadata));
+  await db.write();
+};
+
+export const getMessages = async (): Promise<AIMessage[]> => {
+  const db = await getDb();
+  return db.data.messages.map(removeMetadata);
+};
+```
+
+## 💬 Building the Chat Flow
+
+- runLLM was modified to accept an array of messages, not just one string.
+- Messages are combined from:
+
+  - Previous history (getMessages())
+  - New user message
+
+- This array is then sent to OpenAI’s API.
+
+### Save Both Sides of Conversation
+
+- You must save both:
+
+  - The user input (role: "user")
+  - The AI response (role: "assistant")
+
+Example:
+
+```ts
+await addMessages([
+  { role: "user", content: userMessage },
+  { role: "assistant", content: aiResponse },
+]);
+```
+
+## 🧠 Memory Behavior Demo
+
+- If memory (db.json) contains:
+
+```json
+[
+  { "role": "user", "content": "My name is Scott" },
+  { "role": "assistant", "content": "Hi, Scott." }
+]
+```
+
+- Then asking "What is my name?" returns: Your name is Scott.
+
+If the messages aren't saved, the AI won't "remember" anything.
+
+## 🧹 Message Management Strategy
+
+| What to Keep             | What to Remove               |
+| ------------------------ | ---------------------------- |
+| System instructions      | Old, resolved queries        |
+| Recent relevant messages | Redundant or irrelevant info |
+| Critical info            | Completed task steps         |
+
+Priority Order for Prompts:
+
+1. System message
+2. Current task messages
+3. Recent context
+4. Reference data

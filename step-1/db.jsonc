@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "what is my name",
+      "id": "d7444a6d-4d3b-4af7-b1ee-71ad2153cb6d",
+      "createdAt": "2025-06-10T14:37:58.090Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Your name is Eduardo. How can I assist you today?",
+      "id": "823f2d83-3112-4340-9823-e0b17eef3235",
+      "createdAt": "2025-06-10T14:38:11.859Z"
+    }
+  ]
+}
