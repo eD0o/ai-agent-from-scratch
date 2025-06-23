@@ -11,6 +11,18 @@
       "content": "Your name is Eduardo. How can I assist you today?",
       "id": "823f2d83-3112-4340-9823-e0b17eef3235",
       "createdAt": "2025-06-10T14:38:11.859Z"
+    },
+    {
+      "role": "user",
+      "content": "qual meu nome",
+      "id": "9562c8a0-9a65-4340-bb28-99048b40c6b6",
+      "createdAt": "2025-06-14T08:47:59.015Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Seu nome é Eduardo. Como posso ajudar você hoje?",
+      "id": "08fc663f-231e-47de-9fd6-41dcdafb84a1",
+      "createdAt": "2025-06-14T08:48:00.004Z"
     }
   ]
 }
