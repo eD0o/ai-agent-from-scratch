@@ -23,6 +23,36 @@
       "content": "Seu nome é Eduardo. Como posso ajudar você hoje?",
       "id": "08fc663f-231e-47de-9fd6-41dcdafb84a1",
       "createdAt": "2025-06-14T08:48:00.004Z"
+    },
+    {
+      "role": "user",
+      "content": "qual é o clima ?",
+      "id": "a507b661-6c06-40bb-912d-6a17540165c0",
+      "createdAt": "2025-06-24T10:22:33.145Z"
+    },
+    {
+      "role": "user",
+      "content": "qual é o clima ?",
+      "id": "34522cb7-4c2d-435d-84cc-1cb27e248616",
+      "createdAt": "2025-06-24T10:29:25.138Z"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_xbnPFBciiMBXhREbvNYtnu2B",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{}"
+          }
+        }
+      ],
+      "refusal": null,
+      "annotations": [],
+      "id": "d7a285ba-0368-4e4a-a83d-a340b16b885a",
+      "createdAt": "2025-06-24T10:29:26.401Z"
     }
   ]
 }
