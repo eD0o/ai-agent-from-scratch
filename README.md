@@ -1,194 +1,230 @@
-# 4 - AI Agents
+# 5 - Function Calling
 
-An AI Agent is an `LLM augmented with memory, tool use, and loops`, enabling autonomous multi-step task execution.
+## 5.1 - Overview
 
-## 4.1 - Types of AI Agents
+### 🤖 What is Function Calling?
 
-| Type                          | Examples                                                                           | Capabilities                                                                                                                                                                                              |
-| ----------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Customer Service Agents       | - Intercom's Resolution Bot <br> - HubSpot's Service Hub <br> - Zendesk Answer Bot | - Issue classification and triage <br> - FAQ handling <br> - Documentation search <br> - Escalation to humans <br> - Context management <br> - Tool usage (e.g., check order status)                      |
-| Developer Assistants          | - GitHub Copilot <br> - Amazon CodeWhisperer <br> - Tabnine                        | - Code completion <br> - Bug detection <br> - Refactoring <br> - Code documentation <br> - Test case generation <br> - Code review <br> - Tool usage (linters, compilers, API testers)                    |
-| Research & Analysis Agents    | - Market research <br> - Academic research <br> - Data analysis                    | - Info gathering (APIs, web, docs) <br> - Data synthesis & summarization <br> - Trend analysis <br> - Report drafting <br> - Tool usage (scrapers, databases, spreadsheets) <br> - Memory across sessions |
-| Personal Task-Oriented Agents | - AutoGPT <br> - BabyAGI <br> - Personal AI                                        | - Task management <br> - Schedule organization <br> - Email writing <br> - Research and reminders <br> - Persistent memory <br> - Decision-making for tool usage (APIs, plugins, databases)               |
+Function calling allows a Large Language Model (LLM) to:
 
-### 🔥 Key Agent Capabilities Across Applications
+- Parse natural language into structured function calls.
+- Match user intent with available functions.
+- Format and pass arguments to backend functions.
 
-| Capability                 | Description                                                                                              |
-| -------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Tool Usage                 | Ability to call APIs, databases, web tools, or other software to perform actions beyond text generation. |
-| Memory                     | Short-term (context window) and long-term (persistent) memory to maintain context over time.             |
-| Loops & Recursion          | Iteratively refine outputs or retry tasks until a goal is achieved.                                      |
-| Autonomous Decision-Making | Planning steps, choosing tools, and executing tasks with minimal human intervention.                     |
+This `enables AI agents to dynamically call APIs, fetch data, perform actions, and return results back to the user`.
 
-### 🚀 Future Trends in AI Agents
+### 🔐 Security Considerations
 
-| Trend                    | Description                                                                            |
-| ------------------------ | -------------------------------------------------------------------------------------- |
-| Multi-agent Systems      | Multiple specialized agents collaborating (e.g., scheduler, researcher, communicator). |
-| Smarter Tool Integration | Deeper connections to APIs, SaaS, cloud services, and internal tools.                  |
-| Improved Reasoning       | Models with better step-by-step decision-making, error handling, and self-correction.  |
-| Advanced Memory Systems  | Systems that summarize, store, and retrieve information more intelligently over time.  |
-| Domain-specific Agents   | Smaller, faster, and more efficient agents tailored to specific tasks or industries.   |
+- `AI can't access anything you don’t expose`.
+- `Use scoped functions with proper user ID checks` (e.g., multi-tenant filtering).
+- Avoid exposing raw ORMs or overly broad tools.
 
-## 4.2 - Building an AI Agent
+> Treat tools like any API: secure and permissioned.
 
-### 🏗️ Agent Structure
+### 🔁 Message Flow
 
-- Build an abstraction called runAgent on top of the existing LLM function.
-- runAgent:
+1. User sends a message
+   `{ role: 'user', content: 'What's the weather in London?' }`
 
-  - Accepts a userMessage and an array of tools.
-  - Adds the user message to the database (addMessages).
-  - Shows a loading spinner (showLoader).
-  - Fetches message history (getMessages).
-  - Calls the LLM (runLLM) with:
+2. AI selects a tool and forms a call
 
-    - The message history.
-    - Available tools (with Zod schema validation).
+   ```json
+   {
+     "role": "assistant",
+     "content": null,
+     "tool_calls": [
+       {
+         "id": "call_abc123",
+         "type": "function",
+         "function": {
+           "name": "get_weather",
+           "arguments": "{\"location\":\"London\"}"
+         }
+       }
+     ]
+   }
+   ```
 
-  - Logs the AI response (logMessage).
-  - Adds the AI response back to the database.
-  - Stops the loader.
-  - Returns the updated message history.
+3. You execute the function and respond
 
-```ts
-//agent.ts
-import type { AIMessage } from "../types";
-import { runLLM } from "./llm";
-import { addMessages, getMessages } from "./memory";
-import { logMessage, showLoader } from "./ui";
+   ```json
+   {
+     "role": "tool",
+     "content": "{\"temperature\":18,\"condition\":\"cloudy\"}",
+     "tool_call_id": "call_abc123"
+   }
+   ```
 
-export const runAgent = async ({
-  userMessage,
-  tools, // tools are functions that the agent can call
-}: {
-  userMessage: string;
-  tools: any[];
-}) => {
-  await addMessages([
-    {
-      role: "user",
-      content: userMessage,
-    },
-  ]);
+4. AI responds with final output
+   `{ role: 'assistant', content: 'It’s 18°C and cloudy in London.' }`
 
-  const loader = showLoader("🤔");
+### ⚠️ Required Response Format
 
-  const history = await getMessages();
-  const response = await runLLM({
-    messages: history,
-    tools,
-  });
+- Must include:
 
-  if (response.tool_calls) {
-    console.log(response.tool_calls);
+  - role: "tool"
+  - content: stringified JSON or plain string
+  - tool_call_id: must match the tool_calls array from assistant’s message
+
+Failure to include a valid tool_call_id will break the flow.
+
+### 🛠 Tool Response & Error Handling
+
+- You can return any string, even complex JSON.
+
+- No schema required for return values.
+
+- Best practice for async tools:
+
+  ```ts
+  try {
+    const result = await tool();
+    return { success: true, data: result };
+  } catch (err) {
+    return { failed: true, reason: err.message };
   }
+  ```
 
-  await addMessages([response]);
+- Train the AI to handle errors gracefully:
+  “Sorry, I had an issue performing that action. I’ve notified the engineers.”
 
-  logMessage(response);
-  loader.stop();
-  return getMessages();
-};
-```
+### 🧠 Tool Selection Logic
 
-### 🛠️ Tool Integration
+#### Clear vs Ambiguous Intents
 
-- Tools are `functions the AI can call` (e.g., "get weather").
-- Tools are defined with Zod schemas for:
+- ✅ Clear:
+  “What’s the stock price of Apple?” → getstockprice(symbol: "AAPL")
 
-  - Name
-  - Description
-  - Parameters
+- ⚠️ Ambiguous:
+  “How’s Apple doing today?” → unclear (stock? news? sentiment?)
 
-- Tools are passed to OpenAI's API using ZodFunction helpers.
-- tool_choice: 'auto' lets the AI decide which tool to call.
-- Parallel tool calls are disabled to avoid complexity.
+- 🧩 Avoid overlapping tools
+  e.g. getWeather() vs getWeatherByCity() → confusing
+  → Use one with optional parameters instead.
 
-### 🔄 Tool Call Flow
+### ⚙️ Common Function Types
 
-- After the AI requests a tool (tool_calls), the next response must be a message with:
+1. Data Retrieval
 
-  - role: 'tool'
-  - The result in content
-  - The same tool_call_id
+   - Fetch info from APIs, databases, vector stores.
+   - e.g., search, lookups, status checks.
 
-- Failure to follow this order leads to errors (the AI gets "confused").
+2. Actions
 
-```ts
-// llm.ts
-import type { AIMessage } from "../types";
-import { openai } from "./ai";
-import { zodFunction } from "openai/helpers/zod.mjs";
+   - Mutate state: send email, submit forms, place orders.
+   - ⚠️ Needs human-in-the-loop in many cases.
 
-export const runLLM = async ({
-  messages,
-  tools,
-}: {
-  messages: AIMessage[];
-  tools: any[];
-}) => {
-  const formattedTools = tools.map(zodFunction); // Convert tools to the format expected by OpenAI
+3. Calculations
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.1, // how creative the response should be - value between 0 and 2
-    messages,
-    tools: formattedTools, // tools to use in the response
-    tool_choice: "auto", // auto or required
-    parallel_tool_calls: false, // whether to call tools in parallel or sequentially
-  });
+   - Use AI to compute answers with given inputs.
+   - e.g., calculate mortgage, tax, interest, etc.
 
-  return response.choices[0].message;
-};
-```
+### 📐 Function Definition Best Practices
+
+#### ✅ Good
 
 ```ts
-// index.ts
-import "dotenv/config";
-import { runAgent } from "./src/agent";
-import { z } from "zod";
-
-const userMessage = process.argv[2];
-
-if (!userMessage) {
-  console.error("Please provide a message");
-  process.exit(1);
+{
+  name: 'send_email',
+  description: 'Send an email to the specified address.',
+  parameters: {
+    type: 'object',
+    properties: {
+      to: { type: 'string', description: 'Email address of recipient' },
+      subject: { type: 'string', description: 'Subject of the email' }
+    },
+    required: ['to', 'subject']
+  }
 }
-
-const weatherTool = {
-  name: "get_weather",
-  parameters: z.object({}),
-};
-
-const response = await runAgent({ userMessage, tools: [weatherTool] });
-
-console.log(response);
 ```
 
-### 💡 Prompt Design Tips
+#### ❌ Bad
 
-- Keep tool descriptions clear but concise, too much detail reduces reasoning ability.
-- Adding a "reasoning" field improves decision-making:
+```ts
+{
+  name: 'email',
+  description: 'Emails',
+  parameters: {
+    to: { type: 'string' },
+    subj: { type: 'string' }
+  }
+}
+```
 
-  - Forces the AI to explain why it chose a tool.
-  - Helps reduce errors and hallucinations.
+- Be explicit, descriptive, and human-like.
+- Treat AI as a junior developer on your team.
 
-### 🔢 Token Management
+### 📊 Examples of Tools
 
-- Use tokenizers (e.g., [gpt-tokenizer](https://www.npmjs.com/package/gpt-tokenizer)) to:
+#### 1. Weather
 
-  - Estimate input/output token counts.
-  - `Prevent exceeding context limits`.
+```ts
+{
+  name: 'get_weather',
+  description: 'Get the current weather for a city.',
+  parameters: {
+    type: 'object',
+    properties: {
+      location: { type: 'string', description: 'City name' }
+    },
+    required: ['location']
+  }
+}
+```
 
-- Important for:
+#### 2. Stock Price
 
-  - Cost control
-  - Error prevention
-  - Usage-based pricing models
+```ts
+{
+  name: 'get_stock_price',
+  description: 'Get the current stock price.',
+  parameters: {
+    type: 'object',
+    properties: {
+      symbol: { type: 'string', description: 'Ticker symbol' }
+    },
+    required: ['symbol']
+  }
+}
+```
 
-### 🚫 Max Tokens Limit
+#### 3. Reminder
 
-- max_tokens applies to the output only, not input.
-- Truncates output but doesn't help the model "think shorter."
-> Better alternative: Use structured outputs (JSON) with schemas for reliable control.
+```ts
+{
+  name: 'create_reminder',
+  description: 'Set a reminder.',
+  parameters: {
+    type: 'object',
+    properties: {
+      text: { type: 'string' },
+      time: { type: 'string', description: 'ISO timestamp' }
+    }
+  }
+}
+```
+
+### 💡 Common Use Cases
+
+- External API calls: weather, stocks, flights
+- Database operations: user/product lookup, filtering
+- System actions: reminders, calendar events, notifications
+
+### 🧩 Integrating in Code
+
+```ts
+if (response.tool_calls?.[0]) {
+  const toolCall = response.tool_calls[0];
+  const result = await execute(toolCall);
+
+  const finalResponse = await llm.chat({
+    messages: [
+      ...history,
+      {
+        role: "tool",
+        content: JSON.stringify(result),
+        tool_call_id: toolCall.id,
+      },
+    ],
+  });
+}
+```
