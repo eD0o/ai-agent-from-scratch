@@ -228,3 +228,186 @@ if (response.tool_calls?.[0]) {
   });
 }
 ```
+
+## 5.2 – Creating a Tool Runner
+
+### 🛠 Goal and Concept
+
+Build a system that:
+
+- Listens for tool calls from the LLM.
+- Executes the appropriate tool.
+- Feeds the result back to the LLM.
+- Records the result for continued conversation context.
+
+- Tool Runner receives:
+
+  - The tool call from the LLM.
+  - The original user message.
+
+- Uses the tool name (toolCall.function.name) to determine which function to execute.
+- Handles unknown tool names safely (by throwing an error or returning a fallback).
+
+> You can pass anything (e.g., userId, auth info, etc.) to your tool functions—just extend the input object.
+
+### 🧪 Tool Execution Flow
+
+```ts
+// toolRunner.ts
+import type OpenAI from "openai";
+
+const getWeather = () => "very cold. 17deg";
+
+export const runTool = async (
+  toolCall: OpenAI.Chat.Completions.ChatCompletionMessageToolCall,
+  userMessage: string
+) => {
+  const input = {
+    userMessage,
+    toolArgs: JSON.parse(toolCall.function.arguments),
+  };
+
+  switch (toolCall.function.name) {
+    case "weather":
+      return getWeather();
+    default:
+      throw new Error(`Unknown tool: ${toolCall.function.name}`);
+  }
+};
+```
+
+### 🔁 Agent Update to Handle Tool Calls
+
+The agent:
+
+1. Adds the user message to memory.
+2. Runs the LLM.
+3. Checks if the response includes a tool_calls array.
+4. If yes:
+
+   - Runs the appropriate tool.
+   - Saves the tool response as a message.
+
+5. Returns the updated message history.
+
+```ts
+// agent.ts
+if (response.tool_calls) {
+  const toolCall = response.tool_calls[0];
+  loader.update(`executing: ${toolCall.function.name}`);
+
+  const toolResponse = await runTool(toolCall, userMessage);
+  await saveToolResponse(toolCall.id, toolResponse);
+
+  loader.update(`executed: ${toolCall.function.name}`);
+}
+```
+
+### 💾 Saving Tool Responses
+
+Store the result of the tool as a tool role message:
+
+```ts
+// memory.ts
+export const saveToolResponse = async (
+  toolCallId: string,
+  toolResponse: string
+) => {
+  return await addMessages([
+    { role: "tool", content: toolResponse, tool_call_id: toolCallId },
+  ]);
+};
+```
+
+### 💡 Key Behaviors
+
+- OpenAI's API guarantees that a response will either have content or tool_calls, not both.
+- Use this to determine:
+
+  - content → Final answer → end loop.
+  - tool_calls → Still processing → run tool and loop again.
+
+- Tool calls must be followed by a tool role response with the matching tool_call_id.
+
+### 📦 Run Entry Point
+
+```ts
+// index.ts
+const messages = await runAgent({
+  userMessage,
+  tools: [
+    {
+      name: "weather",
+      parameters: z.object().describe("get the weather"),
+    },
+  ],
+});
+```
+
+### 🤖 Prompt Design Tip
+
+You can trick the LLM into believing it did something:
+
+- The assistant doesn’t know who inserted the message.
+- You can simulate a tool being called (e.g., for approvals) by inserting messages manually.
+
+```ts
+[
+  {
+    role: "assistant",
+    tool_calls: [
+      { id: "tool_x", function: { name: "book_meeting", arguments: "{}" } },
+    ],
+  },
+  { role: "tool", content: "User must approve", tool_call_id: "tool_x" },
+];
+```
+
+### 🧠 Handling Repeated Questions
+
+If a similar question is asked:
+
+- LLM might skip the tool call if it already knows the answer from history.
+- You can:
+
+  - Instruct the model to always recall tools in the system prompt.
+  - Purge tool call messages after a few follow-ups.
+  - Dynamically remove tool responses after first use.
+
+### 🧨 Common Error
+
+If you see:
+
+> `"assistant" message with tool_calls must be followed by "tool" messages responding to each tool_call_id"`
+
+It means:
+
+- The message flow is broken.
+- You likely started in a broken state (e.g., a leftover tool_call without a corresponding tool message).
+- Fix: Clear your message history and restart.
+
+### 🧰 Full File Overview
+
+toolRunner.ts:
+
+- Implements runTool, with a switch on function name.
+- Calls getWeather, which returns hardcoded weather.
+
+llm.ts:
+
+- Uses zodFunction to wrap tools.
+- Calls openai.chat.completions.create.
+
+agent.ts:
+
+- Manages conversation history.
+- Runs LLM and tools.
+- Saves tool response to memory.
+
+memory.ts:
+
+- saveToolResponse saves role: "tool" messages to chat history.
+
+index.ts:
+
+- Entry point: parses CLI input and triggers runAgent.

@@ -2,57 +2,34 @@
   "messages": [
     {
       "role": "user",
-      "content": "what is my name",
-      "id": "d7444a6d-4d3b-4af7-b1ee-71ad2153cb6d",
-      "createdAt": "2025-06-10T14:37:58.090Z"
-    },
-    {
-      "role": "assistant",
-      "content": "Your name is Eduardo. How can I assist you today?",
-      "id": "823f2d83-3112-4340-9823-e0b17eef3235",
-      "createdAt": "2025-06-10T14:38:11.859Z"
-    },
-    {
-      "role": "user",
-      "content": "qual meu nome",
-      "id": "9562c8a0-9a65-4340-bb28-99048b40c6b6",
-      "createdAt": "2025-06-14T08:47:59.015Z"
-    },
-    {
-      "role": "assistant",
-      "content": "Seu nome é Eduardo. Como posso ajudar você hoje?",
-      "id": "08fc663f-231e-47de-9fd6-41dcdafb84a1",
-      "createdAt": "2025-06-14T08:48:00.004Z"
-    },
-    {
-      "role": "user",
-      "content": "qual é o clima ?",
-      "id": "a507b661-6c06-40bb-912d-6a17540165c0",
-      "createdAt": "2025-06-24T10:22:33.145Z"
-    },
-    {
-      "role": "user",
-      "content": "qual é o clima ?",
-      "id": "34522cb7-4c2d-435d-84cc-1cb27e248616",
-      "createdAt": "2025-06-24T10:29:25.138Z"
+      "content": "how is the weather",
+      "id": "a8d39a98-f87a-4b5d-9204-f7705d4e33a1",
+      "createdAt": "2025-06-25T15:58:27.616Z"
     },
     {
       "role": "assistant",
       "content": null,
       "tool_calls": [
         {
-          "id": "call_xbnPFBciiMBXhREbvNYtnu2B",
+          "id": "call_84VckB8pE9StmYrFU40M1EEJ",
           "type": "function",
           "function": {
             "name": "get_weather",
-            "arguments": "{}"
+            "arguments": "{\"reasoning\":\"I want to provide the current weather information.\"}"
           }
         }
       ],
       "refusal": null,
       "annotations": [],
-      "id": "d7a285ba-0368-4e4a-a83d-a340b16b885a",
-      "createdAt": "2025-06-24T10:29:26.401Z"
+      "id": "a27ce2da-f46c-48e8-8e2e-d42549ee7bc3",
+      "createdAt": "2025-06-25T15:58:28.694Z"
+    },
+    {
+      "role": "tool",
+      "content": "hot, 90deg",
+      "tool_call_id": "call_84VckB8pE9StmYrFU40M1EEJ",
+      "id": "2bb51ef8-addb-471e-a437-bed9a1d15193",
+      "createdAt": "2025-06-25T15:58:28.696Z"
     }
   ]
 }
