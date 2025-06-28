@@ -2,34 +2,138 @@
   "messages": [
     {
       "role": "user",
-      "content": "how is the weather",
-      "id": "a8d39a98-f87a-4b5d-9204-f7705d4e33a1",
-      "createdAt": "2025-06-25T15:58:27.616Z"
+      "content": "whats the weather",
+      "id": "9ca41004-e4cf-4833-96db-88ba07f83dc5",
+      "createdAt": "2025-06-28T00:51:56.803Z"
     },
     {
       "role": "assistant",
       "content": null,
       "tool_calls": [
         {
-          "id": "call_84VckB8pE9StmYrFU40M1EEJ",
+          "id": "call_8xWxMVtKIBf43b8WKSgUH2VE",
           "type": "function",
           "function": {
             "name": "get_weather",
-            "arguments": "{\"reasoning\":\"I want to provide the current weather information.\"}"
+            "arguments": "{\"reasoning\":\"To provide the current weather information.\"}"
           }
         }
       ],
       "refusal": null,
       "annotations": [],
-      "id": "a27ce2da-f46c-48e8-8e2e-d42549ee7bc3",
-      "createdAt": "2025-06-25T15:58:28.694Z"
+      "id": "fd63aacc-48f7-44a9-9bc8-2253e0379be4",
+      "createdAt": "2025-06-28T00:51:59.469Z"
     },
     {
       "role": "tool",
       "content": "hot, 90deg",
-      "tool_call_id": "call_84VckB8pE9StmYrFU40M1EEJ",
-      "id": "2bb51ef8-addb-471e-a437-bed9a1d15193",
-      "createdAt": "2025-06-25T15:58:28.696Z"
+      "tool_call_id": "call_8xWxMVtKIBf43b8WKSgUH2VE",
+      "id": "0c63d0bf-24ca-4ab2-85c6-ecca91b19193",
+      "createdAt": "2025-06-28T00:51:59.473Z"
+    },
+    {
+      "role": "user",
+      "content": "qual",
+      "id": "95c29021-9d50-43aa-a6f9-28145386ca3c",
+      "createdAt": "2025-06-28T01:00:35.577Z"
+    },
+    {
+      "role": "user",
+      "content": "where",
+      "id": "937bdb96-f819-49a1-8359-9b1b08356614",
+      "createdAt": "2025-06-28T01:03:42.229Z"
+    },
+    {
+      "role": "user",
+      "content": "qual o clima em sp",
+      "id": "e1139d82-875f-4f1e-9322-548450ed9ee0",
+      "createdAt": "2025-06-28T01:13:24.657Z"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_ijGwkhNhrdo1dbLE1Uy2IbBS",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"reasoning\":\"Para fornecer informações sobre o clima em São Paulo.\"}"
+          }
+        }
+      ],
+      "refusal": null,
+      "annotations": [],
+      "id": "170b596a-a362-464a-abeb-bafb1d99743d",
+      "createdAt": "2025-06-28T01:13:26.203Z"
+    },
+    {
+      "role": "tool",
+      "content": "hot, 90deg",
+      "tool_call_id": "call_ijGwkhNhrdo1dbLE1Uy2IbBS",
+      "id": "71927642-14a3-4feb-9d64-da3e44ba2d59",
+      "createdAt": "2025-06-28T01:13:26.205Z"
+    },
+    {
+      "role": "assistant",
+      "content": "O clima em São Paulo está quente, com uma temperatura de 90 graus Fahrenheit.",
+      "refusal": null,
+      "annotations": [],
+      "id": "c6c1ff45-ee72-4e99-aaf0-38201571e476",
+      "createdAt": "2025-06-28T01:13:27.121Z"
+    },
+    {
+      "role": "user",
+      "content": "qual o clima mediano em montes claros ?",
+      "id": "8dd84dce-7c0d-48ab-9b2b-c45cdeb38da0",
+      "createdAt": "2025-06-28T01:14:19.376Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Montes Claros, localizada no estado de Minas Gerais, Brasil, tem um clima tropical. A temperatura média anual varia entre 20°C e 25°C. Durante o verão, as temperaturas podem subir, frequentemente ultrapassando os 30°C, enquanto no inverno, as temperaturas podem cair para cerca de 10°C à noite. A cidade também recebe uma quantidade significativa de chuvas, especialmente entre os meses de outubro e março.",
+      "refusal": null,
+      "annotations": [],
+      "id": "0d7254d9-5748-46dc-855a-da084dc71251",
+      "createdAt": "2025-06-28T01:14:21.762Z"
+    },
+    {
+      "role": "user",
+      "content": "qual o clima em montes claros",
+      "id": "5e687b70-91bf-410a-b28f-f200aad7b7be",
+      "createdAt": "2025-06-28T01:22:43.432Z"
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_RrgNQjY5IeJdRqavl3lJH6ej",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"reasoning\":\"Para fornecer informações sobre o clima atual em Montes Claros.\"}"
+          }
+        }
+      ],
+      "refusal": null,
+      "annotations": [],
+      "id": "b7f28b26-aa20-44f1-8322-68daacbd5c1e",
+      "createdAt": "2025-06-28T01:22:45.415Z"
+    },
+    {
+      "role": "tool",
+      "content": "hot, 90deg",
+      "tool_call_id": "call_RrgNQjY5IeJdRqavl3lJH6ej",
+      "id": "a10ef981-1e10-4487-89f9-af8cf96bdcdd",
+      "createdAt": "2025-06-28T01:22:45.419Z"
+    },
+    {
+      "role": "assistant",
+      "content": "O clima em Montes Claros está quente, com uma temperatura de 90 graus Fahrenheit.",
+      "refusal": null,
+      "annotations": [],
+      "id": "b3f3e900-43bf-4068-b0ce-1cb96487ef05",
+      "createdAt": "2025-06-28T01:22:46.362Z"
     }
   ]
 }

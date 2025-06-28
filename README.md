@@ -142,3 +142,98 @@ if (userSaysStop) {
 
 > Build loops like you're working with a real human.
 > Think psychology first, then code — that's how you design reliable agent systems with LLMs.
+
+## 6.2 - Coding The Agent Loop
+
+The agent loop is not just about fetching information and responding. It also represents a `control structure that keeps the agent "alive" and running until it knows for sure that it's time to stop`.
+
+### ✅ What the Loop Actually Does
+
+#### 🔁 1. Repeat as Needed for Reasoning
+
+- In each iteration, the LLM decides:
+
+  - Should I call a tool?
+  - Do I have the final answer?
+  - Should I continue or stop?
+
+#### ⛔ 2. Controlled Exit Conditions
+
+- The loop only exits when:
+
+  - `response.content exists → final answer`
+  - The maxTurns limit is reached
+  - A user cancels the task (if supported)
+  - A critical error happens
+
+#### 💬 3. Feels "Alive"
+
+- It runs as while (true), making it always ready to react.
+- But it’s `not truly infinite — it relies on smart, safe stopping conditions`.
+- It can even listen for cancel events (e.g. via WebSockets), and gracefully stop with a message like:
+  “Task was interrupted. Here’s what I’ve done so far.”
+
+### 📌 Summary Table
+
+| Loop Purpose                | Description                                                                |
+| --------------------------- | -------------------------------------------------------------------------- |
+| 🔄 Info Processing          | Retrieves data, processes results, responds, and repeats if needed         |
+| 🔂 Multi-Step Task Handling | Executes chains like “search flights → find hotel → book”                  |
+| ⏹ Safe Stop                 | Ends on response.content, errors, cancellation, or loop count limit        |
+| 🔒 State Management         | Reloads updated history every turn to keep context fresh                   |
+| 🌐 Event-Aware Cancellation | Can stop on external events like "user canceled" if the system supports it |
+
+```ts
+// agent.ts
+
+import type { AIMessage } from "../types";
+import { runLLM } from "./llm";
+import { addMessages, getMessages, saveToolResponse } from "./memory";
+import { runTool } from "./toolRunner";
+import { logMessage, showLoader } from "./ui";
+
+export const runAgent = async ({
+  userMessage,
+  tools, // tools are functions that the agent can call
+}: {
+  userMessage: string;
+  tools: any[];
+}) => {
+  await addMessages([
+    {
+      role: "user",
+      content: userMessage,
+    },
+  ]);
+
+  const loader = showLoader("🤔");
+
+  while (true) {
+    const history = await getMessages();
+    const response = await runLLM({
+      messages: history,
+      tools,
+    });
+
+    await addMessages([response]);
+
+    if (response.content) {
+      loader.stop();
+      logMessage(response);
+      return getMessages();
+    }
+
+    if (response.tool_calls) {
+      const toolCall = response.tool_calls[0];
+      loader.update(`executing tool: ${toolCall.function.name}`);
+      const toolResponse = await runTool(toolCall, userMessage);
+      await saveToolResponse(toolCall.id, toolResponse);
+      loader.update(`done: ${toolCall.function.name}`);
+    }
+  }
+};
+```
+
+So in short:
+
+> The loop isn't just for function-calling logic — it's the heartbeat of the agent, keeping it responsive and persistent until the task is truly complete or intentionally stopped.
