@@ -9,11 +9,10 @@ export const generateImageToolDefinition = {
       prompt: z
         .string()
         .describe(
-          'prompt for the image. Be sure to consider the user originl message when making the prompt. If you are unsure, then ask the user to provide more details.'
+          'The prompt to use to generate the image with a diffusion model image generator like Dall-E'
         ),
-    }),
-  description: 'Generates an image and returns the url of the image.'
-
+    })
+    .describe('Generates an image and returns the url of the image.'),
 }
 
 type Args = z.infer<typeof generateImageToolDefinition.parameters>

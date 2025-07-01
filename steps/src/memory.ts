@@ -25,7 +25,7 @@ type Data = {
 const defaultData: Data = { messages: [] }
 
 export const getDb = async () => {
-  const db = await JSONFilePreset<Data>('db.jsonc', defaultData)
+  const db = await JSONFilePreset<Data>('db.json', defaultData)
 
   return db
 }
@@ -41,10 +41,17 @@ export const getMessages = async () => {
   return db.data.messages.map(removeMetadata)
 }
 
-export const saveToolResponse = async (toolCallId: string, toolResponse: string) => {
-  return addMessages([{
-    role: 'tool',
-    content: toolResponse,
-    tool_call_id: toolCallId,
-  }])
+export const saveToolResponse = async (
+  toolCallId: string,
+  toolResponse: string
+) => {
+  return await addMessages([
+    { role: 'tool', content: toolResponse, tool_call_id: toolCallId },
+  ])
+}
+
+export const clearMessages = async (keepLast?: number) => {
+  const db = await getDb()
+  db.data.messages = db.data.messages.slice(-(keepLast ?? 0))
+  await db.write()
 }

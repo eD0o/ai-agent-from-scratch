@@ -17,7 +17,7 @@ export const reddit: ToolFn<Args, string> = async ({
   toolArgs,
   userMessage,
 }) => {
-  const { data } = await fetch('https://www.reddit.com/r/aww/.json').then((res) =>
+  const { data } = await fetch('https://www.reddit.com/.json').then((res) =>
     res.json()
   )
 
